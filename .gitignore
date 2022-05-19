@@ -48,3 +48,10 @@ mitsuba.*.log
 .settings
 .cproject
 .project
+
+# qtcreator configuration files
+mitsuba.config
+mitsuba.creator
+mitsuba.creator.user
+mitsuba.files
+mitsuba.includes

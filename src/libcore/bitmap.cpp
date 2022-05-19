@@ -2776,7 +2776,7 @@ void Bitmap::writeJPEG(Stream *stream, int quality) const {
 }
 #endif
 
-#if defined(MTS_HAS_OPENEXR)
+//#if defined(MTS_HAS_OPENEXR)
 void Bitmap::readOpenEXR(Stream *stream, const std::string &_prefix) {
     EXRIStream istr(stream);
     Imf::InputFile file(istr);
@@ -3192,6 +3192,14 @@ void Bitmap::writeOpenEXR(Stream *stream) const {
     if (!metadata.hasProperty("generatedBy"))
         metadata.setString("generatedBy", "Mitsuba version " MTS_VERSION);
 
+    Log(EDebug, "pixel format: %i", pixelFormat);
+
+    if (pixelFormat == ESpectrum){
+        Log(EDebug, "added spectral header");
+        if (!metadata.hasProperty("spectralLayoutVersion"))
+            metadata.setString("spectralLayoutVersion", "1.0");
+    }
+
     std::vector<std::string> keys = metadata.getPropertyNames();
 
     Imf::Header header(m_size.x, m_size.y);
@@ -3262,6 +3270,9 @@ void Bitmap::writeOpenEXR(Stream *stream) const {
 
     bool explicitChannelNames = false;
     Imf::ChannelList &channels = header.channels();
+
+    Log(EDebug, "m_channelNames: %i", m_channelNames.size());
+
     if (m_channelNames.size() == (size_t) getChannelCount()) {
         for (size_t i=0; i<m_channelNames.size(); ++i)
             channels.insert(m_channelNames[i].c_str(), Imf::Channel(compType));
@@ -3275,9 +3286,14 @@ void Bitmap::writeOpenEXR(Stream *stream) const {
         channels.insert("B", Imf::Channel(compType));
     } else if (pixelFormat == ESpectrum || pixelFormat == ESpectrumAlpha) {
         for (int i=0; i<SPECTRUM_SAMPLES; ++i) {
-            std::pair<Float, Float> coverage = Spectrum::getBinCoverage(i);
-            std::string name = formatString("%.2f-%.2fnm", coverage.first, coverage.second);
-            channels.insert(name.c_str(), Imf::Channel(compType));
+            std::pair<double, double> coverage = Spectrum::getBinCoverage(i);
+            double midCoverage = (coverage.first + coverage.second)/2;
+            std::string midCoverageStr = std::to_string(midCoverage);
+            std::replace(midCoverageStr.begin(), midCoverageStr.end(), '.', ',');
+            std::string channelExrFormat = "T."+midCoverageStr+"nm";
+//            std::pair<Float, Float> coverage = Spectrum::getBinCoverage(i);
+//            std::string name = formatString("%.2f-%.2fnm", coverage.first, coverage.second);
+            channels.insert(channelExrFormat.c_str(), Imf::Channel(compType));
         }
     } else if (pixelFormat == EMultiChannel) {
         for (int i=0; i<getChannelCount(); ++i)
@@ -3310,9 +3326,15 @@ void Bitmap::writeOpenEXR(Stream *stream) const {
         frameBuffer.insert("B", Imf::Slice(compType, ptr, pixelStride, rowStride)); ptr += compStride;
     } else if (pixelFormat == ESpectrum || pixelFormat == ESpectrumAlpha) {
         for (int i=0; i<SPECTRUM_SAMPLES; ++i) {
-            std::pair<Float, Float> coverage = Spectrum::getBinCoverage(i);
-            std::string name = formatString("%.2f-%.2fnm", coverage.first, coverage.second);
-            frameBuffer.insert(name.c_str(), Imf::Slice(compType, ptr, pixelStride, rowStride)); ptr += compStride;
+            std::pair<double, double> coverage = Spectrum::getBinCoverage(i);
+            double midCoverage = (coverage.first + coverage.second)/2;
+            std::string midCoverageStr = std::to_string(midCoverage);
+            std::replace(midCoverageStr.begin(), midCoverageStr.end(), '.', ',');
+
+            std::string channelExrFormat = "T."+midCoverageStr+"nm";
+
+//            std::string name = formatString("%.2f-%.2fnm", coverage.first, coverage.second);
+            frameBuffer.insert(channelExrFormat.c_str(), Imf::Slice(compType, ptr, pixelStride, rowStride)); ptr += compStride;
         }
     } else if (pixelFormat == EMultiChannel) {
         for (int i=0; i<getChannelCount(); ++i) {
@@ -3330,14 +3352,14 @@ void Bitmap::writeOpenEXR(Stream *stream) const {
     file.setFrameBuffer(frameBuffer);
     file.writePixels(m_size.y);
 }
-#else
-void Bitmap::readOpenEXR(Stream *stream, const std::string &_prefix) {
-    Log(EError, "Bitmap::readOpenEXR(): OpenEXR support was disabled at compile time!");
-}
-void Bitmap::writeOpenEXR(Stream *stream) const {
-    Log(EError, "Bitmap::writeOpenEXR(): OpenEXR support was disabled at compile time!");
-}
-#endif
+//#else
+//void Bitmap::readOpenEXR(Stream *stream, const std::string &_prefix) {
+//    Log(EError, "Bitmap::readOpenEXR(): OpenEXR support was disabled at compile time!");
+//}
+//void Bitmap::writeOpenEXR(Stream *stream) const {
+//    Log(EError, "Bitmap::writeOpenEXR(): OpenEXR support was disabled at compile time!");
+//}
+//#endif
 
 void Bitmap::readTGA(Stream *stream) {
     Stream::EByteOrder byteOrder = stream->getByteOrder();
