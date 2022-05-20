@@ -277,19 +277,19 @@ public:
                 m_channelNames.push_back(name + "A");
             } else if (pixelFormat == "spectrum") {
                 m_pixelFormats.push_back(Bitmap::ESpectrum);
-                //                for (int i=0; i<SPECTRUM_SAMPLES; ++i) {
-                //                    std::pair<Float, Float> coverage = Spectrum::getBinCoverage(i);
-                //                    m_channelNames.push_back(name + formatString("%.2f-%.2fnm", coverage.first, coverage.second));
-                //                }
-
                 for (int i=0; i<SPECTRUM_SAMPLES; ++i) {
-                    std::pair<double, double> coverage = Spectrum::getBinCoverage(i);
-                    double midCoverage = (coverage.first + coverage.second)/2;
-                    std::string midCoverageStr = std::to_string(midCoverage);
-                    std::replace(midCoverageStr.begin(), midCoverageStr.end(), '.', ',');
-                    std::string channelExrFormat = "T."+midCoverageStr+"nm";
-                    m_channelNames.push_back(channelExrFormat);
+                    std::pair<Float, Float> coverage = Spectrum::getBinCoverage(i);
+                    m_channelNames.push_back(name + formatString("%.2f-%.2fnm", coverage.first, coverage.second));
                 }
+
+//                for (int i=0; i<SPECTRUM_SAMPLES; ++i) {
+//                    std::pair<double, double> coverage = Spectrum::getBinCoverage(i);
+//                    double midCoverage = (coverage.first + coverage.second)/2;
+//                    std::string midCoverageStr = std::to_string(midCoverage);
+//                    std::replace(midCoverageStr.begin(), midCoverageStr.end(), '.', ',');
+//                    std::string channelExrFormat = "T."+midCoverageStr+"nm";
+//                    m_channelNames.push_back(channelExrFormat);
+//                }
             } else if (pixelFormat == "spectrumalpha") {
                 m_pixelFormats.push_back(Bitmap::ESpectrumAlpha);
                 for (int i=0; i<SPECTRUM_SAMPLES; ++i) {

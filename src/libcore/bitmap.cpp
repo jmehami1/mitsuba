@@ -3194,11 +3194,11 @@ void Bitmap::writeOpenEXR(Stream *stream) const {
 
     Log(EDebug, "pixel format: %i", pixelFormat);
 
-    if (pixelFormat == ESpectrum){
-        Log(EDebug, "added spectral header");
-        if (!metadata.hasProperty("spectralLayoutVersion"))
-            metadata.setString("spectralLayoutVersion", "1.0");
-    }
+//    if (pixelFormat == ESpectrum){
+//        Log(EDebug, "added spectral header");
+//        if (!metadata.hasProperty("spectralLayoutVersion"))
+//            metadata.setString("spectralLayoutVersion", "1.0");
+//    }
 
     std::vector<std::string> keys = metadata.getPropertyNames();
 
@@ -3286,14 +3286,14 @@ void Bitmap::writeOpenEXR(Stream *stream) const {
         channels.insert("B", Imf::Channel(compType));
     } else if (pixelFormat == ESpectrum || pixelFormat == ESpectrumAlpha) {
         for (int i=0; i<SPECTRUM_SAMPLES; ++i) {
-            std::pair<double, double> coverage = Spectrum::getBinCoverage(i);
-            double midCoverage = (coverage.first + coverage.second)/2;
-            std::string midCoverageStr = std::to_string(midCoverage);
-            std::replace(midCoverageStr.begin(), midCoverageStr.end(), '.', ',');
-            std::string channelExrFormat = "T."+midCoverageStr+"nm";
-//            std::pair<Float, Float> coverage = Spectrum::getBinCoverage(i);
-//            std::string name = formatString("%.2f-%.2fnm", coverage.first, coverage.second);
-            channels.insert(channelExrFormat.c_str(), Imf::Channel(compType));
+//            std::pair<double, double> coverage = Spectrum::getBinCoverage(i);
+//            double midCoverage = (coverage.first + coverage.second)/2;
+//            std::string midCoverageStr = std::to_string(midCoverage);
+//            std::replace(midCoverageStr.begin(), midCoverageStr.end(), '.', ',');
+//            std::string channelExrFormat = "T."+midCoverageStr+"nm";
+            std::pair<Float, Float> coverage = Spectrum::getBinCoverage(i);
+            std::string name = formatString("%.2f-%.2fnm", coverage.first, coverage.second);
+            channels.insert(name.c_str(), Imf::Channel(compType));
         }
     } else if (pixelFormat == EMultiChannel) {
         for (int i=0; i<getChannelCount(); ++i)
@@ -3325,17 +3325,11 @@ void Bitmap::writeOpenEXR(Stream *stream) const {
         frameBuffer.insert("G", Imf::Slice(compType, ptr, pixelStride, rowStride)); ptr += compStride;
         frameBuffer.insert("B", Imf::Slice(compType, ptr, pixelStride, rowStride)); ptr += compStride;
     } else if (pixelFormat == ESpectrum || pixelFormat == ESpectrumAlpha) {
-        for (int i=0; i<SPECTRUM_SAMPLES; ++i) {
-            std::pair<double, double> coverage = Spectrum::getBinCoverage(i);
-            double midCoverage = (coverage.first + coverage.second)/2;
-            std::string midCoverageStr = std::to_string(midCoverage);
-            std::replace(midCoverageStr.begin(), midCoverageStr.end(), '.', ',');
-
-            std::string channelExrFormat = "T."+midCoverageStr+"nm";
-
-//            std::string name = formatString("%.2f-%.2fnm", coverage.first, coverage.second);
-            frameBuffer.insert(channelExrFormat.c_str(), Imf::Slice(compType, ptr, pixelStride, rowStride)); ptr += compStride;
-        }
+            for (int i=0; i<SPECTRUM_SAMPLES; ++i) {
+                std::pair<Float, Float> coverage = Spectrum::getBinCoverage(i);
+                std::string name = formatString("%.2f-%.2fnm", coverage.first, coverage.second);
+                frameBuffer.insert(name.c_str(), Imf::Slice(compType, ptr, pixelStride, rowStride)); ptr += compStride;
+            }
     } else if (pixelFormat == EMultiChannel) {
         for (int i=0; i<getChannelCount(); ++i) {
             frameBuffer.insert(formatString("%i", i).c_str(), Imf::Slice(compType, ptr, pixelStride, rowStride));
