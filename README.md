@@ -3,13 +3,7 @@ Mitsuba — Physically Based Renderer
 
 ## Updated Compilation and Building
 
-Instructions are for Ubuntu 18.04
-
-RGB compilation
-
--geometric normals
-
--rgb rendering
+Basic Instructions are for Ubuntu 18.04 singularity container which will compile in spectral mode with 100 channels.
 
 
 
@@ -19,7 +13,7 @@ Spectral compilation (100 channels)
 
 -albedo
 
--irradiance 
+-irradiance (TODO)
 
 
 
@@ -27,7 +21,7 @@ Spectral compilation (100 channels)
 
 ```bash
 # All regular dependencies
-sudo apt-get install build-essential scons git mercurial libjpeg-dev libilmbase-dev libxerces-c-dev libboost-all-dev libopenexr-dev libglewmx-dev libxxf86vm-dev libpcrecpp0v5 libeigen3-dev libfftw3-dev qt5-default libqt5opengl5-dev libqt5xmlpatterns5-dev
+sudo apt-get install build-essential scons git mercurial libjpeg-dev libilmbase-dev libxerces-c-dev libboost-all-dev libopenexr-dev libglewmx-dev libxxf86vm-dev libpcrecpp0v5 libeigen3-dev libfftw3-dev libcollada-dom2.4-dp-dev
 
 
 # Missing libpng fix
@@ -35,7 +29,24 @@ sudo add-apt-repository ppa:linuxuprising/libpng12
 sudo apt update
 sudo apt install libpng12-0
 
-sudo apt-get install libcollada-dom2.4-dp-dev
+```
+
+
+
+### Git repo
+
+```bash
+git clone -b singularity_spectral https://github.com/jmehami1/mitsuba.git
+```
+
+
+
+### Compiling
+
+```bash
+cd mitsuba
+scons -j8
+source setpath.sh
 ```
 
 https://medium.com/@sree_here/10-steps-to-install-mitsuba-renderer-on-ubuntu-38a9318fbcdf

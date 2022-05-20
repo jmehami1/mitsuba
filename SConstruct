@@ -51,7 +51,7 @@ mainEnv = build('src/mitsuba/SConscript')
 converter_objects = build('src/converter/SConscript', ['mainEnv'])
 
 # Build the Qt-based GUI binaries
-build('src/mtsgui/SConscript', ['mainEnv', 'converter_objects'], duplicate=True)
+# build('src/mtsgui/SConscript', ['mainEnv', 'converter_objects'], duplicate=True)
 
 env['SHLIBPREFIX']=''
 
