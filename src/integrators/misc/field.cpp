@@ -63,7 +63,8 @@ public:
         EUV,
         EAlbedo,
         EShapeIndex,
-        EPrimIndex
+        EPrimIndex,
+        ERadiantIntensity
     };
 
     FieldIntegrator(const Properties &props) : SamplingIntegrator(props) {
@@ -87,10 +88,12 @@ public:
             m_field = EShapeIndex;
         } else if (field == "primIndex") {
             m_field = EPrimIndex;
+        } else if (field == "radiantIntensity") {
+            m_field = ERadiantIntensity;
         } else {
             Log(EError, "Invalid 'field' parameter. Must be one of 'position', "
-                "'relPosition', 'distance', 'geoNormal', 'shNormal', "
-                "'primIndex', 'shapeIndex', or 'uv'!");
+                        "'relPosition', 'distance', 'geoNormal', 'shNormal', "
+                        "'primIndex', 'shapeIndex', or 'uv'!");
         }
 
         if (props.hasProperty("undefined")) {
@@ -103,16 +106,16 @@ public:
         }
 
         if (SPECTRUM_SAMPLES != 3 && (m_field == EUV || m_field == EShadingNormal || m_field == EGeometricNormal
-                || m_field == ERelativePosition || m_field == EPosition)) {
+                                      || m_field == ERelativePosition || m_field == EPosition)) {
             Log(EError, "The field integrator implementation requires renderings to be done in RGB when "
-                    "extracting positional data or surface normals / UV coordinates.");
+                        "extracting positional data or surface normals / UV coordinates.");
         }
     }
 
     FieldIntegrator(Stream *stream, InstanceManager *manager)
-     : SamplingIntegrator(stream, manager) {
-         m_field = (EField) stream->readInt();
-         m_undefined = Spectrum(stream);
+        : SamplingIntegrator(stream, manager) {
+        m_field = (EField) stream->readInt();
+        m_undefined = Spectrum(stream);
     }
 
     void serialize(Stream *stream, InstanceManager *manager) const {
@@ -127,50 +130,58 @@ public:
         if (!rRec.rayIntersect(ray))
             return result;
 
+
         Intersection &its = rRec.its;
 
         switch (m_field) {
-            case EPosition:
-                result.fromLinearRGB(its.p.x, its.p.y, its.p.z);
-                break;
-            case ERelativePosition: {
-                    const Sensor *sensor = rRec.scene->getSensor();
-                    const Transform &t = sensor->getWorldTransform()->eval(its.t).inverse();
-                    Point p = t(its.p);
-                    result.fromLinearRGB(p.x, p.y, p.z);
+        case EPosition:
+            result.fromLinearRGB(its.p.x, its.p.y, its.p.z);
+            break;
+        case ERelativePosition: {
+            const Sensor *sensor = rRec.scene->getSensor();
+            const Transform &t = sensor->getWorldTransform()->eval(its.t).inverse();
+            Point p = t(its.p);
+            result.fromLinearRGB(p.x, p.y, p.z);
+        }
+            break;
+        case EDistance:
+            result = Spectrum(its.t);
+            break;
+        case EGeometricNormal:
+            result.fromLinearRGB(its.geoFrame.n.x, its.geoFrame.n.y, its.geoFrame.n.z);
+            break;
+        case EShadingNormal:
+            result.fromLinearRGB(its.shFrame.n.x, its.shFrame.n.y, its.shFrame.n.z);
+            break;
+        case EUV:
+            result.fromLinearRGB(its.uv.x, its.uv.y, 0);
+            break;
+        case EAlbedo:
+            result = its.shape->getBSDF()->getDiffuseReflectance(its);
+            break;
+        case ERadiantIntensity:{
+            const ref_vector<Emitter> emitters = rRec.scene->getEmitters();
+            DirectSamplingRecord dRec(its);
+            result = emitters.front()->sampleDirect(dRec, Point2(0.0f));
+//            Log(EDebug, "Result size: %i", result);
+        }
+            break;
+        case EShapeIndex: {
+            const ref_vector<Shape> &shapes = rRec.scene->getShapes();
+            result = Spectrum((Float) -1);
+            for (size_t i=0; i<shapes.size(); ++i) {
+                if (shapes[i] == its.shape) {
+                    result = Spectrum((Float) i);
+                    break;
                 }
-                break;
-            case EDistance:
-                result = Spectrum(its.t);
-                break;
-            case EGeometricNormal:
-                result.fromLinearRGB(its.geoFrame.n.x, its.geoFrame.n.y, its.geoFrame.n.z);
-                break;
-            case EShadingNormal:
-                result.fromLinearRGB(its.shFrame.n.x, its.shFrame.n.y, its.shFrame.n.z);
-                break;
-            case EUV:
-                result.fromLinearRGB(its.uv.x, its.uv.y, 0);
-                break;
-            case EAlbedo:
-                result = its.shape->getBSDF()->getDiffuseReflectance(its);
-                break;
-            case EShapeIndex: {
-                    const ref_vector<Shape> &shapes = rRec.scene->getShapes();
-                    result = Spectrum((Float) -1);
-                    for (size_t i=0; i<shapes.size(); ++i) {
-                        if (shapes[i] == its.shape) {
-                            result = Spectrum((Float) i);
-                            break;
-                        }
-                    }
-                }
-                break;
-            case EPrimIndex:
-                result = Spectrum((Float) its.primIndex);
-                break;
-            default:
-                Log(EError, "Internal error!");
+            }
+        }
+            break;
+        case EPrimIndex:
+            result = Spectrum((Float) its.primIndex);
+            break;
+        default:
+            Log(EError, "Internal error!");
         }
 
         return result;
@@ -181,8 +192,8 @@ public:
     }
 
     MTS_DECLARE_CLASS()
-private:
-    EField m_field;
+    private:
+        EField m_field;
     Spectrum m_undefined;
 };
 
