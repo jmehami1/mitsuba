@@ -64,7 +64,7 @@ public:
         EAlbedo,
         EShapeIndex,
         EPrimIndex,
-        ERadiantIntensity
+        EIrradiance
     };
 
     FieldIntegrator(const Properties &props) : SamplingIntegrator(props) {
@@ -88,8 +88,8 @@ public:
             m_field = EShapeIndex;
         } else if (field == "primIndex") {
             m_field = EPrimIndex;
-        } else if (field == "radiantIntensity") {
-            m_field = ERadiantIntensity;
+        } else if (field == "irradiance") {
+            m_field = EIrradiance;
         } else {
             Log(EError, "Invalid 'field' parameter. Must be one of 'position', "
                         "'relPosition', 'distance', 'geoNormal', 'shNormal', "
@@ -159,7 +159,7 @@ public:
         case EAlbedo:
             result = its.shape->getBSDF()->getDiffuseReflectance(its);
             break;
-        case ERadiantIntensity:{
+        case EIrradiance:{
             const ref_vector<Emitter> emitters = rRec.scene->getEmitters();
             DirectSamplingRecord dRec(its);
             result = emitters.front()->sampleDirect(dRec, Point2(0.0f));

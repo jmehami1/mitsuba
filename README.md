@@ -1,25 +1,29 @@
 Mitsuba — Physically Based Renderer
 ===================================
 
-## Updated Compilation and Building
+### Additions
 
-Instructions are for Ubuntu 18.04
+Implemented irradiance integrator for perspective camera. Used to get irradiance arriving on surface of objects.
 
-RGB compilation
+### General Info
 
--geometric normals
+Simulator successfully compiled and built on Ubuntu 18.04
 
--rgb rendering
+Spectral compilation of **100 channels** capable of rendering EXR hypercubes of:
+
+- Radiance
+- Reflectance
+- Irradiance 
 
 
 
-Spectral compilation (100 channels)
+## Instructions
 
--radiance rendering
+### Cloning Spectral Repo
 
--albedo
-
--irradiance 
+```
+git clone -b spectral https://github.com/jmehami1/mitsuba.git mitsuba_spectral
+```
 
 
 
@@ -41,6 +45,42 @@ sudo apt-get install libcollada-dom2.4-dp-dev
 https://medium.com/@sree_here/10-steps-to-install-mitsuba-renderer-on-ubuntu-38a9318fbcdf
 
 http://mitsuba-renderer.org/
+
+
+
+### Compiling
+
+```bash
+cd mitsuba_spectral
+scons -j8
+source setpath.sh
+```
+
+
+
+### Sourcing to BASHRC
+
+You can create a convenient BASH function to run  *mitsuba_spectral* simulations from terminal given a scene file. Add the following to `.bashrc`:
+
+```bash
+mitsuba-spectral()
+{
+    source **FULL PATH TO**/mitsuba_spectral/setpath.sh
+    mitsuba -v "$1"
+}
+```
+
+
+
+In terminal, you can run simulations as follows:
+
+```bash
+mitsuba-spectral MY_SCENE_FILE.xml
+```
+
+
+
+
 
 ## About
 
