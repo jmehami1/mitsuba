@@ -1,27 +1,21 @@
 Mitsuba — Physically Based Renderer
 ===================================
 
-## Updated Compilation and Building
+### General Info
 
-Instructions are for Ubuntu 18.04
+Simulator successfully compiled and built on Ubuntu 18.04
 
-RGB compilation
+RGB compilation capable of rendering EXR images of:
 
--geometric normals
+- Colour
 
--rgb rendering
+- Geometric normals
 
+- 3D position relative to camera's coordinate frame 
 
+  
 
-Spectral compilation (100 channels)
-
--radiance rendering
-
--albedo
-
--irradiance 
-
-
+## Instructions
 
 ### Dependencies
 
@@ -41,6 +35,36 @@ sudo apt-get install libcollada-dom2.4-dp-dev
 https://medium.com/@sree_here/10-steps-to-install-mitsuba-renderer-on-ubuntu-38a9318fbcdf
 
 http://mitsuba-renderer.org/
+
+### Compiling
+
+```bash
+cd mitsuba
+scons -j8
+source setpath.sh
+```
+
+
+
+### Sourcing to BASHRC
+
+You can create a convenient BASH function to run  *mitsuba* simulations from terminal given a scene file. Add the following to `.bashrc`:
+
+```bash
+mitsuba-rgb()
+{
+    source **FULL PATH TO**/mitsuba/setpath.sh
+    mitsuba -v "$1"
+}
+```
+
+
+
+In terminal, you can run simulations as follows:
+
+```bash
+mitsuba-rgb MY_SCENE_FILE.xml
+```
 
 ## About
 
