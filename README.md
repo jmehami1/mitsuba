@@ -53,21 +53,16 @@ http://mitsuba-renderer.org/
 ```bash
 cd mitsuba_spectral
 scons -j8
-source setpath.sh
 ```
 
 
 
-### Sourcing to BASHRC
+### Bash Script Function
 
-You can create a convenient BASH function to run  *mitsuba_spectral* simulations from terminal given a scene file. Add the following to `.bashrc`:
+A convenient BASH script has been written to run *Mitsuba* simulations from terminal given a scene file. Source the file `run-mitsuba.sh` to `.bashrc`:
 
 ```bash
-mitsuba-spectral()
-{
-    source **FULL PATH TO**/mitsuba_spectral/setpath.sh
-    mitsuba -v "$1"
-}
+source **FULL PATH TO**/mitsuba_spectral/run-mitsuba.sh
 ```
 
 
@@ -75,9 +70,9 @@ mitsuba-spectral()
 In terminal, you can run simulations as follows:
 
 ```bash
-mitsuba-spectral MY_SCENE_FILE.xml
+mitsuba-spectral **reflectance/irradiance** **MY_SCENE_FILE**.xml
 ```
-
+The first argument after *mitsuba-spectral* should be either **reflectance**  or **irradiance**. If no argument is present then **reflectance** is set by default.
 
 
 
